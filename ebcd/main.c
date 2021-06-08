@@ -12,7 +12,7 @@ int main() {
     * */
     // Read data
     double *signal;
-    const char filename[255] = "./data/test1.txt";
+    const char filename[255] = "./data/test2.txt";
     
     // debug
     double *res, *weights, *centered_signal;
@@ -90,6 +90,7 @@ int main() {
     B_indexes[0]= 1;
     B_indexes[1]= 5;
     B_indexes[2]= 8;
+    printf("XtX\n");
     XtX(A_indexes, 2, B_indexes, 3, weights, nb_lines, &res);
     for (i=0 ; i<2 ; i++)
     {
@@ -119,13 +120,21 @@ int main() {
         }
         printf("\n");
     }
+    free(res);
+
+    res = (double*)malloc(2 * 3 * sizeof(double));
+    ebcd(signal, nb_lines, nb_cols, 10.0, weights, -1.0, &res);
+    free(res);
+
+
+
+    
 
 
 
 
 
     free(signal);
-    free(res);
     free(weights);
     free(centered_signal);
 

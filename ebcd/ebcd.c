@@ -10,6 +10,12 @@
 #define DEFAULT_MAX_IT_OUTER 1e5
 #define DEFAULT_MAX_IT 1e5
 
+/******************************************
+ * 
+ *  Mathelatics functions 
+ * 
+ ******************************************/
+
 static inline int max_i(int num1, int num2)
 {
     return (num1 > num2 ) ? num1 : num2;
@@ -30,20 +36,6 @@ static inline double min_f(double num1, double num2)
     return (num1 > num2 ) ? num2 : num1;
 }
 
-static inline void remove_element_i(int *array_from, int n_el, int i_remove, int **array_to)
-{
-    int i, c;
-    c = 0;
-
-    for (i=0 ; i<n_el ; i++)
-    {
-        if (i == i_remove)
-            continue;
-        (*array_to)[c] = array_from[i];
-        c++;
-    }
-}
-
 static inline double frobenius_norm(double *Y, int n_samples, int n_dims)
 {
     int i, j;
@@ -62,6 +54,73 @@ static inline double frobenius_norm(double *Y, int n_samples, int n_dims)
     return sqrt(res);
 }
 
+void center_signal(double *signal, int n_samples, int n_dims, double **res) // TODO : pass this into static inline
+{
+    int i, j;
+    double col_sum[n_dims];
+
+    // Initialize to 0.0
+    for (j=0 ; j<n_dims ; j++)
+    {
+        col_sum[j] = 0.0;
+    }
+
+    // Compute sum for each column
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            col_sum[j] += signal[i*n_dims + j];
+        }
+    }
+    // Divide by the number of sample to get the empirical mean
+    for (j=0 ; j<n_dims ; j++)
+    {
+        col_sum[j] = col_sum[j] / (n_samples*1.0);
+    }
+
+    // Substract column mean
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            (*res)[i*n_dims + j] = signal[i*n_dims + j] - col_sum[j];
+        }
+    }
+
+    return;
+}
+
+void cumsum(double *signal, int n_samples, int n_dims, double **res) // TODO : pass this into static inline
+{
+    int i,j;
+
+    // Initialize
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            (*res)[i*n_dims + j] = 0.0;
+        }
+    }
+
+    // Handle first line
+    for (j=0 ; j<n_dims ; j++)
+    {
+        (*res)[j] = signal[j];
+    }
+    // Handle rest of the lines
+    for (i=1 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            (*res)[i*n_dims + j] += (*res)[(i-1)*n_dims + j] + signal[i*n_dims + j];
+        }
+    }
+
+    return;
+}
+
 static inline int max_index_array(double *Y, int n)
 {
     int i, res;
@@ -71,15 +130,16 @@ static inline int max_index_array(double *Y, int n)
     {
         return -1;
     }
+    if (n == 1)
+    {
+        return 0;
+    }
 
+    // Initialize
     res = 0;
     max = Y[0];
 
-    if (n == 1)
-    {
-        return res;
-    }
-
+    // Scan the rest of the array
     for (i=1 ; i<n ; i++)
     {
         if (Y[i] > max)
@@ -91,9 +151,29 @@ static inline int max_index_array(double *Y, int n)
     return res;
 }
 
+/******************************************
+ * 
+ *  Array logics
+ * 
+ ******************************************/ 
+
+static inline void remove_element_i(int *array_from, int n_el, int i_remove, int **array_to)
+{
+    int i, c;
+    c = 0;
+
+    for (i=0 ; i<n_el ; i++)
+    {
+        if (i == i_remove)
+            continue;
+        (*array_to)[c] = array_from[i];
+        c++;
+    }
+}
+
 static inline int check_i_in_A_remove_inplace(int **A, int array_size, int val)
 {
-    int i, j, k;
+    int i, j;
 
     for (i=0 ; i<array_size ; i++)
     {
@@ -112,72 +192,22 @@ static inline int check_i_in_A_remove_inplace(int **A, int array_size, int val)
 
 static inline void add_element_in_A_inplace(int **A, int max_array_size, int array_size, int val)
 {
-
-    (*A)[array_size] = val;
-    if (array_size == max_array_size)
+    if (array_size >= max_array_size)
     {
         return;
     }
+    (*A)[array_size] = val;
     (*A)[array_size+1] = '\0';
     return;
 }
 
+/******************************************
+ * 
+ *  Sparse operation involving X
+ * 
+ ******************************************/ 
 
-void center_signal(double *signal, int n_samples, int n_dims, double **res)
-{
-    int i, j;
-    double col_sum[n_dims];
-
-    for (j=0 ; j<n_dims ; j++)
-    {
-        col_sum[j] = 0.0;
-    }
-
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            col_sum[j] += signal[i*n_dims + j];
-        }
-    }
-
-    for (j=0 ; j<n_dims ; j++)
-    {
-        col_sum[j] = col_sum[j] / (n_samples*1.0);
-    }
-
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            (*res)[i*n_dims + j] = signal[i*n_dims + j] - col_sum[j];
-        }
-    }
-    return;
-}
-
-void cumsum(double *center_signal, int n_samples, int n_dims, double **res)
-{
-    int i,j;
-
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            (*res)[i*n_dims + j] = 0.0;
-        }
-    }
-
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            (*res)[i*n_dims + j] += (*res)[(i-1)*n_dims + j] + center_signal[i*n_dims + j];
-        }
-    }
-}
-
-void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, double *weights, double **res)
+void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, double *weights, double **res) // TODO : pass this into static inline
 {
     int i, j;
     double *beta_weighted;
@@ -185,6 +215,7 @@ void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, doubl
 
     beta_weighted = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
 
+    // Initialize
     for (i=0 ; i<n_samples ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -192,6 +223,8 @@ void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, doubl
             (*res)[i*n_dims + j] = 0.0;
         }
     }
+
+    // Multiply each row by corresponding weights
     for (i=0 ; i<n_samples-1 ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -199,6 +232,8 @@ void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, doubl
             beta_weighted[i*n_dims + j] = beta[i*n_dims + j] * weights[i];
         }
     }
+
+    // First line of the result is always filled with 0.0
     second_line = (*res)+n_dims;
     cumsum(beta_weighted, n_samples-1, n_dims, &second_line);
 
@@ -207,10 +242,9 @@ void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, doubl
     return;
 }
 
-void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, double **res)
+void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, double **res) // TODO : pass this into static inline
 {
     double *Y_cumsum;
-
     int i, j;
 
     Y_cumsum = (double*)malloc(n_samples * n_dims * sizeof(double));
@@ -228,7 +262,7 @@ void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, dou
 
 }
 
-void XtX(int *A_indexes, int A_size, int *B_indexes, int B_size, double *weights, int n_samples, double **res)
+void XtX(int *A_indexes, int A_size, int *B_indexes, int B_size, double *weights, int n_samples, double **res) // TODO : pass this into static inline
 {
     int i, j;
     int u, v;
@@ -249,6 +283,7 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
     int i, j;
     double *beta_c, *s, *u, *pre_res;
 
+    // If A is the empty set, results is just filled with 0.0
     if (A_size == 0)
     {
         for (i=0 ; i<n_samples-1 ; i++)
@@ -258,15 +293,16 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
                 (*res)[i*n_dims + j] = 0.0;
             }
         }
-
         return;
     }
 
+    // Allocate local variables
     beta_c = (double*)malloc((n_samples-1)*n_dims*sizeof(double));
     s = (double*)malloc((n_samples-1)*n_dims*sizeof(double));
     u = (double*)malloc(n_dims*sizeof(double));
     pre_res = (double*)malloc((n_samples-1)*n_dims*sizeof(double));
 
+    // Initialize
     for (i=0 ; i<n_samples-1 ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -276,7 +312,12 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
             pre_res[i*n_dims + j] = 0.0;
         }
     }
+    for (j=0 ; j<n_dims ; j++)
+    {
+        u[j] = 0.0;
+    }
 
+    // Multiply beta by corresponding weight
     for (i=0 ; i<A_size ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -285,37 +326,20 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
         }
     }
 
+    // Induction in reverse order of beta_c
     for (j=0 ; j<n_dims ; j++)
     {
         s[(n_samples-2)*n_dims + j] = beta_c[(n_samples-2)*n_dims + j];
     }
     for (i=1 ; i<n_samples-1 ; i++)
     {
-        // printf("%d\t", (n_samples-2 -i));
-        // printf("%f\t", beta_c[(n_samples-2 -i)*n_dims]);
-        // printf("%f\t", s[(n_samples-2 - (i+1))*n_dims]);
         for (j=0 ; j<n_dims ; j++)
         {   
             s[(n_samples-2 -i)*n_dims + j] = s[(n_samples-2 - i+1)*n_dims + j] + beta_c[(n_samples-2 -i)*n_dims + j];
         }
-        // printf("%f\n", s[(n_samples-2 -i)*n_dims]);
     }
-    // Debug
-    // printf("s\n");
-    // for (i=0 ; i<n_samples-1 ; i++)
-    // {
-    //     for (j=0 ; j<n_dims ; j++)
-    //     {
-    //         printf("%f\t", s[i*n_dims + j]);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("end s\n");
-
-    for (j=0 ; j<n_dims ; j++)
-    {
-        u[j] = 0.0;
-    }
+    
+    // Compute 1 x p vector u
     for (i=0 ; i<A_size ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -323,23 +347,18 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
             u[j] += (A_indexes[i]*1.0+1.0)*beta_c[A_indexes[i]*n_dims + j];
         }
     }
+    // Divide by the number of samples
     for (j=0 ; j<n_dims ; j++)
     {
         u[j] = u[j] / (n_samples*1.0);
     }
-    // Debug
-    // printf("u\n");
-    // for (j=0 ; j<n_dims ; j++)
-    // {
-    //     printf("%f\t", u[j]);
-    // }
-    // printf("\nend u\n");
 
-
+    // Handle first line of the pre-result
     for (j=0 ; j<n_dims ; j++)
     {
         pre_res[j] = s[j] - u[j];
     }
+    // Handle rest of the lines
     for (i=1 ; i<n_samples-1 ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -348,6 +367,7 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
         }
     }
     
+    // Just apply the weights
     for (i=0 ; i<n_samples-1 ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -375,9 +395,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     double *gain, *S_i, *XitX, *new_beta_i, *S, *normS;
     double temp_d, max_norm_A_not_indexes;
     double *temp_d_array;
-    double *gamma;
-
-    
+    double *gamma;    
 
     tol_c = tol;
     if (tol < 0.0)
@@ -394,7 +412,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     /*
     * Initialize A and beta
     */
-    n_A = 0;
+    n_A = 0; // We start with an empty active set
     A = (int*)malloc((n_samples-1) * sizeof(int));
     A_not_indexes = (int*)malloc((n_samples-1) * sizeof(int));
     A[0] = '\0';
@@ -412,19 +430,9 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     */
     C = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
     leftmultiplybyXt(centered_signal, n_samples, n_dims, weights, &C);
-    // Debug
-    printf("##################### C\n");
-    for (i=0 ; i<n_samples-1 ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            printf("%f\t", C[i*n_dims + j]);
-        }
-        printf("\n");
-    }
 
+    // Stopping criteria
     global_sol = 0;
-
     it_counter = 0;
 
     while (global_sol == 0 && it_counter < DEFAULT_MAX_IT_OUTER)
@@ -433,84 +441,43 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
         printf("#### Iteration %d\n", it_counter);
         it_counter+=1;
 
-        gain = (double*)malloc(n_A * sizeof(double));
-        for (i=0 ; i<n_A ; i++)
-        {
-            gain[i] = 2.0*tol_c;
-        }
-        // Debug
-        printf("#### gain\n");
-        for (i=0 ; i<n_A ; i++)
-        {
-            printf("%.10f\t", gain[i]);
-        }
-        printf("\n");
-        printf("#### beta\n");
-        for (i=0 ; i<n_A ; i++)
-        {
-            for (p=0 ; p<n_dims ; p++)
-            {
-                printf("%f\t", beta[A[i]*n_dims + p]);
-            }
-             printf("\n");
-        }
-
+        // Allocate variables used in the inner for loop
         Ai = (int*)malloc((n_A-1) * sizeof(int));
         S_i = (double*)malloc(n_dims * sizeof(double));
         new_beta_i = (double*)malloc(n_dims * sizeof(double));
         temp_d_array = (double*)malloc(1 * n_dims * sizeof(double));
         XitX = (double*)malloc(1 * (n_A-1) * sizeof(double));
+        gain = (double*)malloc(n_A * sizeof(double));
+
+        // Initialize gains
+        for (i=0 ; i<n_A ; i++)
+        {
+            gain[i] = 2.0*tol_c;
+        }
+
         for (it=0 ; it<DEFAULT_MAX_IT ; it++)
         {
-            // debug
-            printf("###### it %d\n", it);
+            // Update beta
+
             if (n_A == 0)
             {
-                printf("###### Breaking beta optim on n_A == 0\n");
+                // If A is the empty set, then no need to update beta
                 break;
             }
-            // Update beta
+
             A_idx = it % n_A;
             i = A[A_idx];
             remove_element_i(A, n_A, A_idx, &Ai);
-            // Debug
-            printf("A_idx : %d\n", A_idx);
-            printf("i : %d\n", i);
-            // debug
-            printf("###### A with n_A=%d\n", n_A);
-            for (p=0 ; p<n_A ; p++)
-            {
-                printf("%d\t", A[p]);   
-            }
-            printf("\n");
-            printf("######Ai\n");
-            for (p=0 ; p<n_A-1 ; p++)
-            {
-                printf("%d\t", Ai[p]);   
-            }
-            printf("\n");
             
+            // Initialize S with C
             for (p=0 ; p<n_dims ; p++)
             {
                 S_i[p] = C[i*n_dims + p];
             }
-            // Debug
-            printf("S_i before\n");
-            for (p=0 ; p<n_dims ; p++)
-            {
-                printf("%f\t", S_i[p]); 
-            }
-            printf("\n");
-            // Reprendre ici !!!!
+            // Then, if the remaining active set is non empty, compute corrective term of S
             if (n_A > 1)
             {
                 XtX(&i, 1, Ai, n_A-1, weights, n_samples, &XitX);
-                printf("XitX\n");
-                for (q=0 ; q<n_A-1 ; q++)
-                {
-                    printf("%f\t", XitX[q]);
-                }
-                printf("\n");
                 for (p=0 ; p<n_dims ; p++)
                 {
                     XitX_dot_beta_Ai = 0.0;
@@ -521,55 +488,22 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                     S_i[p] -= XitX_dot_beta_Ai;
                 }
             }
-
-            // Debug
-            printf("S_i\n");
-            for (p=0 ; p<n_dims ; p++)
-            {
-                printf("%f\t", S_i[p]); 
-            }
-            printf("\n");
             
+            // Compute new beta values
             gammai = (i + 1.0) * (n_samples - i - 1.0) * pow(weights[i], 2) / (n_samples*1.0);
-            // Debug
-            printf("gammai : %f\n", gammai);
             temp_d = max_f(1.0 - lambda / frobenius_norm(S_i, 1, n_dims), 0.0);
-            // Debug
-            printf("temp_d : %f\n", temp_d);
-            // Debug
-            printf("frobenius_norm(S_i, 1, n_dims) : %f\n", frobenius_norm(S_i, 1, n_dims));
             for (p=0 ; p<n_dims ; p++)
             {
                 new_beta_i[p] = temp_d * S_i[p] / gammai;
                 temp_d_array[p] = beta[i*n_dims + p] - new_beta_i[p];
-                // debug
-                printf("new_beta_i[p]  %f\t", new_beta_i[p] );
-                printf("temp_d_array[%d] : %f\t", p, temp_d_array[p]);
             }
-             // debug
-            printf("\n");
             gain[A_idx] = frobenius_norm(temp_d_array, 1, n_dims);
             for (p=0 ; p<n_dims ; p++)
             {
                 beta[i*n_dims + p] = new_beta_i[p];
             }
-            // Debug
-            printf("gain\n");
-            for (p=0 ; p<n_A ; p++)
-            {
-                printf("%.12f\t", gain[p]);
-            }
-            printf("\n");
-            printf("betai\n");
-            for (p=0 ; p<n_dims ; p++)
-            {
-                printf("%f\t", beta[i*n_dims + p]);
-            }
-            printf("\n");
 
-            printf("max_index_array(gain, n_A) is %d\n", max_index_array(gain, n_A));
-            printf("gain[max_index_array(gain, n_A)] is %f\n", gain[max_index_array(gain, n_A)]);
-
+            // Evaluate gain and stop updating beta is under a given threshold
             if (gain[max_index_array(gain, n_A)] < tol_c)
             {
                 // Debug
@@ -577,20 +511,12 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                 break;
             }
         }
-        // Check where it should be called, just after the for loop, or before going back to the while loop
-        printf("bla1\n");
-        free(Ai);
-        printf("bla2\n");
-        free(S_i);
-        printf("bla3\n");
-        free(new_beta_i);
-        printf("bla4\n");
-        free(temp_d_array);
-        printf("bla5\n");
-        free(XitX);
-        printf("bla6\n");
         free(gain);
-        printf("bla7\n");
+        free(XitX);
+        free(temp_d_array);
+        free(new_beta_i);
+        free(S_i);
+        free(Ai);
 
         // Remove from active set the zero coefficients
         for (i=(n_samples-2) ; i>=0 ; i--)
@@ -612,45 +538,31 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                 }
             }
         }
-        printf("After removing from active set : n_A = %d\n", n_A);
 
         // Check optimality
+
+        // Allocate local variables
         temp_d_array = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
         S = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
         normS = (double*)malloc((n_samples-1) * sizeof(double));
-        // Debug
-        printf("Debug\n");
-        printf("n_A is %d\n", n_A);
+        
+        // Compute X.T @ X @ beta for corrective term of S
         multiplyXtXbysparse(A, n_A, n_samples, n_dims, beta, weights, &temp_d_array);
-        // print S
-        printf("S\n");
+        // Compute S and norm of each line of S
         for (i=0 ; i<n_samples-1 ; i++)
         {
             normS[i] = 0.0;
             for (j=0 ; j<n_dims ; j++)
             {
                 S[i*n_dims + j] = C[i*n_dims + j] - temp_d_array[i*n_dims + j];
-                printf("%f\t", S[i*n_dims + j]);
                 normS[i] += pow(S[i*n_dims + j ], 2);
             }
-            printf("\n");
         }
-        // Debug
-        printf("normS\n");
-        for (i=0 ; i<n_samples-1 ; i++)
-        {
-            printf("%f\n", normS[i]);
-        }
-        printf("bla8\n");
         free(temp_d_array);
-        printf("bla9\n");
         free(S);
-        printf("bla10\n");
 
         if (n_A > 0)
         {
-            // Debug
-            printf("Check optimality with n_A > 0\n");
             // At optimality we must have normS(i)=lambda^2 for i in AS and
             // normS(i)<lambda^2 for i not in AS.
             lagr =0.0;
@@ -661,38 +573,29 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                     lagr = normS[A[i]];
                 }
             }
-            // Debug
-            printf("lagr is %f\n", lagr);
             if (pow(lambda, 2) < lagr)
             {
                 lagr = pow(lambda, 2);
             }
-            // Debug
-            printf("pow(lambda, 2) is %f\n", pow(lambda, 2));
-            printf("lagr is %f\n", lagr);
 
+            // Construct an array with all indexes not in A
+            // Start with all indexes
             n_A_not_indexes = n_samples-1;
             for (i=0 ; i<n_samples-1 ; i++)
             {
                 A_not_indexes[i] = i;
             }
+            // Removes index 
             for (i=0 ; i<n_A ; i++)
             {
                 if(check_i_in_A_remove_inplace(&A_not_indexes, n_A_not_indexes, A[i]) == 1)
                 {
-                    // Should be the case
-                    // Debug
-                    printf("######################################## It is the case\n");
+                    // Should be the case n_A times
                     n_A_not_indexes -= 1;
                 }
             }
-            // Debug
-            printf("n_A_not_indexes is %d\n", n_A_not_indexes);
-            for (i=0 ; i<n_A_not_indexes ; i++)
-            {
-                printf("%d\t", A_not_indexes[i]);
-            }
-            printf("\n");            
+
+            // Look for max of normS for indexes in A_not_indexes
             max_norm_A_not_indexes = 0.0;
             i_max_norm_A_not_indexes = -1;
             for (i=0 ; i<n_A_not_indexes ; i++)
@@ -703,9 +606,6 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                     i_max_norm_A_not_indexes = A_not_indexes[i];
                 }
             }
-            // Debug
-            printf("max_norm_A_not_indexes is %f\n", max_norm_A_not_indexes);
-            printf("i_max_norm_A_not_indexes is %d\n", i_max_norm_A_not_indexes);
             if ((n_A_not_indexes == 0) || (max_norm_A_not_indexes < lagr + tol_c))
             {
                 // Optimality conditions are fulfilled: we have found the global
@@ -718,21 +618,21 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                 // condition
                 add_element_in_A_inplace(&A, n_samples-1, n_A, i_max_norm_A_not_indexes);
                 n_A += 1;
+                for (j=0 ; j<n_dims ; j++)
+                {
+                    beta[i_max_norm_A_not_indexes*n_dims + j] = 0.0;
+                }
             }
         }
         else
         {
-            // Debug
-            printf("#### In case n_A == 0\n");
             i = max_index_array(normS, n_samples);
             if (normS[i] < pow(lambda, 2) + tol_c)
             {
-                printf("###### Setting global_sol to 1\n");
                 global_sol = 1;
             }
             else
             {
-                printf("###### Adding %d in A\n", i);
                 add_element_in_A_inplace(&A, n_samples-1, n_A, i);
                 n_A = 1;
                 for (j=0 ; j<n_dims ; j++)
@@ -741,40 +641,23 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
                 }
             }
         }
-        printf("bla11\n");
         free(normS);
-        printf("bla12\n");
-        // if (it_counter == 5)
-        // {
-        //     return;
-        // }
     }
-    
-    // Debug
-    printf("##################### beta\n");
-    for (i=0 ; i<n_samples-1 ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            printf("%f\t", beta[i*n_dims + j]);
-        }
-        printf("\n");
-    }
-    printf("##################### A\n");
-    for (i=0 ; i<n_A ; i++)
-    {
-        printf("%d\t", A[i]);
-    }
-    printf("\n");
 
     // Reconstruct U
+
     U = (double*)malloc(n_samples * n_dims * sizeof(double));
-    multiplyXnotcenteredbysparse(beta, n_samples, n_dims, weights, &U);
     gamma = (double*)malloc(n_dims * sizeof(double));
+
+    // Compute X @ beta
+    multiplyXnotcenteredbysparse(beta, n_samples, n_dims, weights, &U);
+    
+    // Initialize gamma
     for (j=0 ; j<n_dims ; j++)
     {
         gamma[j] = 0.0;
     }
+    // Compute gamma
     for (i=0 ; i<n_samples ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -782,6 +665,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
             gamma[j] += (signal[i*n_dims + j] - U[i*n_dims + j]) / (n_samples*1.0) ;
         }
     }
+    // Update U with gamma
     for (i=0 ; i<n_samples ; i++)
     {
         for (j=0 ; j<n_dims ; j++)
@@ -789,38 +673,23 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
             U[i*n_dims+j] = gamma[j] + U[i*n_dims+j];
         }
     }
-    printf("U\n");
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
-        {
-            printf("%f\t", U[i*n_dims+j]);
-        }
-        printf("\n");
-    }
 
     // Return
     res->n_A = n_A;
     res->U = (double*)malloc(n_samples * n_dims * sizeof(double));
     res->A = (int*)malloc(n_A * sizeof(int));
     memcpy(res->U, U, n_samples*n_dims*sizeof(double));
-    printf("Copying res->U done\n");
     memcpy(res->A, A, n_A*sizeof(int));
-    printf("Copying res->A done\n");
 
 
-    printf("bla13\n");
-    free(centered_signal); 
+    
     free(gamma);
-    printf("bla14\n");
-    free(C);
-    printf("bla15\n");
-    free(beta);
-    printf("bla16\n");
-    free(A_not_indexes);
-    printf("bla17\n");
     free(U);
+    free(C);
+    free(beta);
+    free(A_not_indexes);
     free(A);
-    // FREE A ?
+    free(centered_signal); 
+
     return;
 }

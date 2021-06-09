@@ -141,6 +141,8 @@ int main() {
         }
         printf("\n");
     }
+    free(the_res.A);
+    free(the_res.U);
     fflush( stdout );
     free(res);
 

@@ -5,11 +5,8 @@
 
 #define DEFAULT_GAIN_TOL 1e-8
 #define DEFAULT_BETA_TOL 1e-12
-//#define DEFAULT_MAX_IT_OUTER 1e5
-#define DEFAULT_MAX_IT_OUTER 100
-//#define DEFAULT_MAX_IT 1e5
-#define DEFAULT_MAX_IT 100
-
+#define DEFAULT_MAX_IT_OUTER 1e5
+#define DEFAULT_MAX_IT 1e5
 
 static inline int max_i(int num1, int num2)
 {

@@ -3,6 +3,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "ebcd.h"
+
 #define DEFAULT_GAIN_TOL 1e-8
 #define DEFAULT_BETA_TOL 1e-12
 #define DEFAULT_MAX_IT_OUTER 1e5
@@ -151,6 +153,7 @@ void center_signal(double *signal, int n_samples, int n_dims, double **res)
             (*res)[i*n_dims + j] = signal[i*n_dims + j] - col_sum[j];
         }
     }
+    return;
 }
 
 void cumsum(double *center_signal, int n_samples, int n_dims, double **res)
@@ -172,6 +175,36 @@ void cumsum(double *center_signal, int n_samples, int n_dims, double **res)
             (*res)[i*n_dims + j] += (*res)[(i-1)*n_dims + j] + center_signal[i*n_dims + j];
         }
     }
+}
+
+void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, double *weights, double **res)
+{
+    int i, j;
+    double *beta_weighted;
+    double *second_line;
+
+    beta_weighted = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
+
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            (*res)[i*n_dims + j] = 0.0;
+        }
+    }
+    for (i=0 ; i<n_samples-1 ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            beta_weighted[i*n_dims + j] = beta[i*n_dims + j] * weights[i];
+        }
+    }
+    second_line = (*res)+n_dims;
+    cumsum(beta_weighted, n_samples-1, n_dims, &second_line);
+
+    free(beta_weighted);
+
+    return;
 }
 
 void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, double **res)
@@ -330,7 +363,7 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
 }
 
 
-void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weights, double tol, double **res)
+void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weights, double tol, Ebcd_Res *res)
 {
     int i, j, n_A, p, q, n_A_not_indexes;
     int it, A_idx;
@@ -338,10 +371,13 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     int global_sol, max_it, it_counter, i_max_norm_A_not_indexes;
     double tol_c, lagr;
     double XitX_dot_beta_Ai, gammai;
-    double *centered_signal, *beta, *C;
+    double *centered_signal, *beta, *C, *U;
     double *gain, *S_i, *XitX, *new_beta_i, *S, *normS;
     double temp_d, max_norm_A_not_indexes;
     double *temp_d_array;
+    double *gamma;
+
+    
 
     tol_c = tol;
     if (tol < 0.0)
@@ -732,9 +768,50 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     printf("\n");
 
     // Reconstruct U
-    // TODO
+    U = (double*)malloc(n_samples * n_dims * sizeof(double));
+    multiplyXnotcenteredbysparse(beta, n_samples, n_dims, weights, &U);
+    gamma = (double*)malloc(n_dims * sizeof(double));
+    for (j=0 ; j<n_dims ; j++)
+    {
+        gamma[j] = 0.0;
+    }
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            gamma[j] += (signal[i*n_dims + j] - U[i*n_dims + j]) / (n_samples*1.0) ;
+        }
+    }
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            U[i*n_dims+j] = gamma[j] + U[i*n_dims+j];
+        }
+    }
+    printf("U\n");
+    for (i=0 ; i<n_samples ; i++)
+    {
+        for (j=0 ; j<n_dims ; j++)
+        {
+            printf("%f\t", U[i*n_dims+j]);
+        }
+        printf("\n");
+    }
+
+    // Return
+    res->n_A = n_A;
+    res->U = (double*)malloc(n_samples * n_dims * sizeof(double));
+    res->A = (int*)malloc(n_A * sizeof(int));
+    memcpy(res->U, U, n_samples*n_dims*sizeof(double));
+    printf("Copying res->U done\n");
+    memcpy(res->A, A, n_A*sizeof(int));
+    printf("Copying res->A done\n");
+
+
     printf("bla13\n");
     free(centered_signal); 
+    free(gamma);
     printf("bla14\n");
     free(C);
     printf("bla15\n");
@@ -742,6 +819,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     printf("bla16\n");
     free(A_not_indexes);
     printf("bla17\n");
+    free(U);
     free(A);
     // FREE A ?
     return;

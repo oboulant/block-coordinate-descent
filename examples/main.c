@@ -70,6 +70,8 @@ int main() {
         }
         printf("\n");
     }
+
+
     printf("leftmultiplybyXt\n");
     leftmultiplybyXt(centered_signal, nb_lines, nb_cols, weights, &res);
     for (i=0 ; i<nb_lines-1 ; i++)
@@ -123,8 +125,25 @@ int main() {
     free(res);
 
     res = (double*)malloc(2 * 3 * sizeof(double));
-    ebcd(signal, nb_lines, nb_cols, 10.0, weights, -1.0, &res);
+    Ebcd_Res the_res;
+    ebcd(signal, nb_lines, nb_cols, 10.0, weights, -1.0, &the_res);
+    printf("n_A in main is %d\n", the_res.n_A);
+    for (i=0 ; i<the_res.n_A ; i++)
+    {
+        printf("%d\t", the_res.A[i]);
+    }
+    printf("\n");
+    for (i=0 ; i<nb_lines ; i++)
+    {
+        for (j=0 ; j<nb_cols ; j++)
+        {
+            printf("%f\t", the_res.U[i*nb_cols + j]);
+        }
+        printf("\n");
+    }
+    fflush( stdout );
     free(res);
+
 
 
 

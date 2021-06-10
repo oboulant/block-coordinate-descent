@@ -254,7 +254,7 @@ void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, dou
     {
         for (j=0 ; j<n_dims ; j++)
         {
-            (*res)[i*n_dims + j] = weights[i] * ((i+1)/n_samples*Y_cumsum[(n_samples-1)*n_dims + j] - Y_cumsum[i*n_dims + j]);
+            (*res)[i*n_dims + j] = weights[i] * ((i+1.0)/n_samples*Y_cumsum[(n_samples-1)*n_dims + j] - Y_cumsum[i*n_dims + j]);
         }
     }
 
@@ -438,7 +438,6 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     while (global_sol == 0 && it_counter < DEFAULT_MAX_IT_OUTER)
     {
         // Debug
-        printf("#### Iteration %d\n", it_counter);
         it_counter+=1;
 
         // Allocate variables used in the inner for loop
@@ -506,8 +505,6 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
             // Evaluate gain and stop updating beta is under a given threshold
             if (gain[max_index_array(gain, n_A)] < tol_c)
             {
-                // Debug
-                printf("In breaking\n");
                 break;
             }
         }
@@ -545,7 +542,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
         temp_d_array = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
         S = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
         normS = (double*)malloc((n_samples-1) * sizeof(double));
-        
+
         // Compute X.T @ X @ beta for corrective term of S
         multiplyXtXbysparse(A, n_A, n_samples, n_dims, beta, weights, &temp_d_array);
         // Compute S and norm of each line of S

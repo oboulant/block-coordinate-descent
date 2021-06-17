@@ -31,11 +31,6 @@ static inline double max_f(double num1, double num2)
     return (num1 > num2 ) ? num1 : num2;
 }
 
-static inline double min_f(double num1, double num2) 
-{
-    return (num1 > num2 ) ? num2 : num1;
-}
-
 static inline double frobenius_norm(double *Y, int n_samples, int n_dims)
 {
     int i, j;
@@ -388,7 +383,7 @@ void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weig
     int i, j, n_A, p, q, n_A_not_indexes;
     int it, A_idx;
     int *A, *Ai, *A_not_indexes;
-    int global_sol, max_it, it_counter, i_max_norm_A_not_indexes;
+    int global_sol, it_counter, i_max_norm_A_not_indexes;
     double tol_c, lagr;
     double XitX_dot_beta_Ai, gammai;
     double *centered_signal, *beta, *C, *U;

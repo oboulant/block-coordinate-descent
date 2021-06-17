@@ -1,15 +1,12 @@
-# main: ./examples/main.c ./read_data/read_data.c ./ebcd/ebcd.c
-# 	gcc -I. -Iread_data -Iebcd -o main ./examples/main.c ./read_data/read_data.c ./ebcd/ebcd.c
-# clean:
-# 	rm -f main
-
 CC=gcc
-CFLAGS=-I. -Iread_data -Iebcd
+CFLAGS=-I. -Iread_data -Iebcd -Wall
 OBJ = ./examples/main.o ./read_data/read_data.o ./ebcd/ebcd.o
 ODIR=obj
 
 $(ODIR)/%.o: %.c %.h
 	$(CC) -c -o $@ $< 
+
+all: main
 
 main: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)

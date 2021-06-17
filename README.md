@@ -3,18 +3,31 @@ Implementation of Bleakley and Vert 2011
 
 ## Build
 
+### Compile
+
 ```
-> make clean
-> make
+> make all
 ```
 
-### Run
+### Clean workspace
+
+```
+> make clean
+```
+
+### Clean and compile
+
+```
+> make clean all
+```
+
+## Run
 
 ```
 > ./main
 ```
 
-### Change input data
+## Change input data
 
 There are two files in the folder `./data/` :
 

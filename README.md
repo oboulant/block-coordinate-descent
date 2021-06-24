@@ -1,33 +1,21 @@
 # block-coordinate-descent
 Implementation of Bleakley and Vert 2011
 
-## Build
+## Examples
 
-### Compile
-
-```
-> make all
-```
-
-### Clean workspace
-
-```
-> make clean
-```
-
-### Clean and compile
+### Clean and Compile
 
 ```
 > make clean all
 ```
 
-## Run
+### Run
 
 ```
 > ./main
 ```
 
-## Change input data
+### Change input data
 
 There are two files in the folder `./data/` :
 
@@ -38,3 +26,18 @@ If you want to change input data file, please
 
 * edit `./examples/main.c` with the proper file path,
 * change `nb_lines` and `nb_cols` in accordance with you data.
+
+## Tests
+
+### Clean and Compile
+
+```
+> make clean test
+```
+
+### Run
+
+```
+> ./test
+```
+

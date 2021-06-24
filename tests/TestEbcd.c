@@ -316,6 +316,12 @@ void inner_leftmultiplybyXt(const int nsamples, const int ndims, double **res, d
         }
     }
 
+    free(weights);
+    free(X);
+    free(centered_X);
+    free(centered_X_T);
+    free(centered_signal);
+
 
 }
 
@@ -598,6 +604,7 @@ void test_multiplyXtXbysparse(void)
     free(res);
     free(expected);
     free(beta);
+    free(A);
 
     /*
     *   nsamples = 50
@@ -621,6 +628,7 @@ void test_multiplyXtXbysparse(void)
     free(res);
     free(expected);
     free(beta);
+    free(A);
 
     return;
 }

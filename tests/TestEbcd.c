@@ -22,7 +22,7 @@ void test_cumsum(void)
     static double expected2[6]={1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
     static double expected3[6]={1.0, 3.0, 6.0, 10.0, 15.0, 21.0};
 
-    res = (double*)malloc(3 * sizeof(double));
+    res = (double*)malloc(6 * sizeof(double));
     
     cumsum(signal, 2, 3, &res);
     TEST_ASSERT_EQUAL_DOUBLE_ARRAY(expected1, res, 6);
@@ -316,6 +316,12 @@ void inner_leftmultiplybyXt(const int nsamples, const int ndims, double **res, d
         }
     }
 
+    free(weights);
+    free(X);
+    free(centered_X);
+    free(centered_X_T);
+    free(centered_signal);
+
 
 }
 
@@ -598,6 +604,7 @@ void test_multiplyXtXbysparse(void)
     free(res);
     free(expected);
     free(beta);
+    free(A);
 
     /*
     *   nsamples = 50
@@ -621,6 +628,7 @@ void test_multiplyXtXbysparse(void)
     free(res);
     free(expected);
     free(beta);
+    free(A);
 
     return;
 }

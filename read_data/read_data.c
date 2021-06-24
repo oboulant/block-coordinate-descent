@@ -4,6 +4,7 @@
 
 #include "read_data.h"
 
+#define UNUSED(expr) do { (void)(expr); } while (0) // To silence a -Wunused-but-set-variable warning
 
 void read_data(const char *filename, int nb_lines, int nb_cols, double **res)
 {
@@ -29,6 +30,7 @@ void read_data(const char *filename, int nb_lines, int nb_cols, double **res)
         double inter;
 
         read = getline(&line, &len, fp);
+        UNUSED(read);
 
         /* get the first token */
         token = strtok(line, ",");

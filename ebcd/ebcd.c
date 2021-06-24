@@ -12,7 +12,7 @@
 
 /******************************************
  * 
- *  Mathelatics functions 
+ *  Mathematical functions 
  * 
  ******************************************/
 
@@ -31,7 +31,7 @@ static inline double max_f(double num1, double num2)
     return (num1 > num2 ) ? num1 : num2;
 }
 
-static inline double frobenius_norm(double *Y, int n_samples, int n_dims)
+static inline double frobenius_norm(const double *Y, const int n_samples, const int n_dims)
 {
     int i, j;
     double res;
@@ -49,7 +49,7 @@ static inline double frobenius_norm(double *Y, int n_samples, int n_dims)
     return sqrt(res);
 }
 
-void center_signal(double *signal, int n_samples, int n_dims, double **res) // TODO : pass this into static inline
+static inline void center_signal(const double *signal, const int n_samples, const int n_dims, double **res)
 {
     int i, j;
     double col_sum[n_dims];
@@ -86,7 +86,7 @@ void center_signal(double *signal, int n_samples, int n_dims, double **res) // T
     return;
 }
 
-void cumsum(double *signal, int n_samples, int n_dims, double **res) // TODO : pass this into static inline
+static inline void cumsum(const double *signal, const int n_samples, const int n_dims, double **res) 
 {
     int i,j;
 
@@ -116,7 +116,13 @@ void cumsum(double *signal, int n_samples, int n_dims, double **res) // TODO : p
     return;
 }
 
-static inline int max_index_array(double *Y, int n)
+/******************************************
+ * 
+ *  Array logics
+ * 
+ ******************************************/ 
+
+static inline int max_index_array(const double *Y, const int n)
 {
     int i, res;
     double max;
@@ -146,13 +152,7 @@ static inline int max_index_array(double *Y, int n)
     return res;
 }
 
-/******************************************
- * 
- *  Array logics
- * 
- ******************************************/ 
-
-static inline void remove_element_i(int *array_from, int n_el, int i_remove, int **array_to)
+static inline void remove_element_i(const int *array_from, const int n_el, const int i_remove, int **array_to)
 {
     int i, c;
     c = 0;
@@ -166,7 +166,7 @@ static inline void remove_element_i(int *array_from, int n_el, int i_remove, int
     }
 }
 
-static inline int check_i_in_A_remove_inplace(int **A, int array_size, int val)
+static inline int check_i_in_A_remove_inplace(int **A, const int array_size, const int val)
 {
     int i, j;
 
@@ -185,7 +185,7 @@ static inline int check_i_in_A_remove_inplace(int **A, int array_size, int val)
     return 0;
 }
 
-static inline void add_element_in_A_inplace(int **A, int max_array_size, int array_size, int val)
+static inline void add_element_in_A_inplace(int **A, const int max_array_size, const int array_size, const int val)
 {
     if (array_size >= max_array_size)
     {
@@ -202,7 +202,7 @@ static inline void add_element_in_A_inplace(int **A, int max_array_size, int arr
  * 
  ******************************************/ 
 
-void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, double *weights, double **res) // TODO : pass this into static inline
+static inline void multiplyXnotcenteredbysparse(const double *beta, const int n_samples, const int n_dims, const double *weights, double **res)
 {
     int i, j;
     double *beta_weighted;
@@ -237,7 +237,7 @@ void multiplyXnotcenteredbysparse(double *beta, int n_samples, int n_dims, doubl
     return;
 }
 
-void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, double **res) // TODO : pass this into static inline
+void leftmultiplybyXt(const double *Y, const int n_samples, const int n_dims, const double *weights, double **res) 
 {
     double *Y_cumsum;
     int i, j;
@@ -257,7 +257,7 @@ void leftmultiplybyXt(double *Y, int n_samples, int n_dims, double *weights, dou
 
 }
 
-void XtX(int *A_indexes, int A_size, int *B_indexes, int B_size, double *weights, int n_samples, double **res) // TODO : pass this into static inline
+void XtX(const int *A_indexes, const int A_size, const int *B_indexes, const int B_size, const double *weights, const int n_samples, double **res)
 {
     int i, j;
     int u, v;
@@ -273,7 +273,7 @@ void XtX(int *A_indexes, int A_size, int *B_indexes, int B_size, double *weights
     }
 }
 
-void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, double *beta, double *weights, double **res)
+void multiplyXtXbysparse(const int *A_indexes, const int A_size, const int n_samples, const int n_dims, const double *beta, const double *weights, double **res)
 {
     int i, j;
     double *beta_c, *s, *u, *pre_res;
@@ -378,7 +378,7 @@ void multiplyXtXbysparse(int *A_indexes, int A_size, int n_samples, int n_dims, 
 }
 
 
-void ebcd(double *signal, int n_samples, int n_dims, double lambda, double *weights, double tol, Ebcd_Res *res)
+void ebcd(const double *signal, const int n_samples, const int n_dims, const double lambda, const double *weights, const double tol, Ebcd_Res *res)
 {
     int i, j, n_A, p, q, n_A_not_indexes;
     int it, A_idx;

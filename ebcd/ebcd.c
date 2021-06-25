@@ -54,30 +54,20 @@ static inline void center_signal(const double *signal, const int n_samples, cons
     int i, j;
     double col_sum[n_dims];
 
-    // Initialize to 0.0
+    // Compute sum for each column
     for (j=0 ; j<n_dims ; j++)
     {
+        // Initialize to 0.0
         col_sum[j] = 0.0;
-    }
 
-    // Compute sum for each column
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
+        for (i=0 ; i<n_samples ; i++)
         {
             col_sum[j] += signal[i*n_dims + j];
         }
-    }
-    // Divide by the number of sample to get the empirical mean
-    for (j=0 ; j<n_dims ; j++)
-    {
+        // Divide by the number of sample to get the empirical mean
         col_sum[j] = col_sum[j] / (n_samples*1.0);
-    }
-
-    // Substract column mean
-    for (i=0 ; i<n_samples ; i++)
-    {
-        for (j=0 ; j<n_dims ; j++)
+        // Substract column mean
+        for (i=0 ; i<n_samples ; i++)
         {
             (*res)[i*n_dims + j] = signal[i*n_dims + j] - col_sum[j];
         }
@@ -410,7 +400,10 @@ void ebcd(const double *signal, const int n_samples, const int n_dims, const dou
     n_A = 0; // We start with an empty active set
     A = (int*)malloc((n_samples-1) * sizeof(int));
     A_not_indexes = (int*)malloc((n_samples-1) * sizeof(int));
-    A[0] = '\0';
+    if (A != NULL)
+    {
+        A[0] = '\0';
+    }
     beta = (double*)malloc((n_samples-1) * n_dims * sizeof(double));
     for (i=0 ; i<n_samples-1 ; i++)
     {

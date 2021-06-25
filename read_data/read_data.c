@@ -11,11 +11,15 @@ void read_data(const char *filename, int nb_lines, int nb_cols, double **res)
     FILE *fp;
     int i;
 
-    // Open file
-    fp = fopen(filename, "r");
-
     // Allocate
     (*res) = (double*)malloc(nb_lines * nb_cols * sizeof(double));
+    if ((*res) == NULL)
+    {
+        return;
+    }
+
+    // Open file
+    fp = fopen(filename, "r");
 
     // Read data from file
     for (i=0 ; i < nb_lines ; i++)

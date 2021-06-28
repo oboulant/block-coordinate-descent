@@ -368,7 +368,7 @@ void multiplyXtXbysparse(const int *A_indexes, const int A_size, const int n_sam
 }
 
 
-void ebcd(const double *signal, const int n_samples, const int n_dims, const double lambda, const double *weights, const double tol, Ebcd_Res *res)
+void ebcd_compute(const double *signal, const int n_samples, const int n_dims, const double lambda, const double *weights, const double tol, Ebcd_Res *res)
 {
     int i, j, n_A, p, q, n_A_not_indexes;
     int it, A_idx;

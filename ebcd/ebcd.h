@@ -4,4 +4,4 @@ typedef struct Ebcd_Res {
    int *A;
 } Ebcd_Res;
 
-void ebcd(const double *signal, const int n_samples, const int n_dims, const double lambda, const double *weights, const double tol, Ebcd_Res *res);
+void ebcd_compute(const double *signal, const int n_samples, const int n_dims, const double lambda, const double *weights, const double tol, Ebcd_Res *res);

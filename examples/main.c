@@ -43,11 +43,11 @@ int main() {
     Ebcd_Res the_res;
     struct timeval start, end;
     gettimeofday(&start, NULL);
-    ebcd(signal, nb_lines, nb_cols, 10.0, weights, -1.0, &the_res);
+    ebcd_compute(signal, nb_lines, nb_cols, 10.0, weights, -1.0, &the_res);
     gettimeofday(&end, NULL);
     long seconds = (end.tv_sec - start.tv_sec);
     long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec); 
-    printf("The elapsed time in ebcd() is %ld seconds and %ld micros\n", seconds, micros);
+    printf("The elapsed time in ebcd_compute() is %ld seconds and %ld micros\n", seconds, micros);
     printf("n_A in main is %d\n", the_res.n_A);
     for (i=0 ; i<the_res.n_A ; i++)
     {

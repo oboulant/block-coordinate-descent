@@ -18,7 +18,7 @@ main: $(OBJ) ./examples/main.o
 ./examples/main.o:
 	$(CC) -c -o ./examples/main.o ./examples/main.c $(INC_EBCD_FLAGS) $(INC_READ_FLAGS) $(CFLAGS) 
 
-test: main $(OBJ_TEST)
+test: $(OBJ_TEST)
 	$(CC) -c -o ./tests/TestEbcd.o ./tests/TestEbcd.c $(INC_UNITY_FLAGS) $(INC_EBCD_FLAGS) $(CFLAGS)
 	$(CC) -c -o ./tests/unity/src/unity.o ./tests/unity/src/unity.c $(INC_UNITY_FLAGS) $(CFLAGS)
 	$(CC) -o ./test ./tests/TestEbcd.o ./tests/unity/src/unity.o $(CFLAGS) $(LIBRARIES) 

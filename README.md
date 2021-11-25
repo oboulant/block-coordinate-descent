@@ -36,14 +36,13 @@ If you want to change input data file, please
 * edit `./examples/main.c` with the proper file path,
 * change `nb_lines` and `nb_cols` in accordance with you data.
 
-### Use the Python wrapper
+## Run on your own data : Use the Python wrapper
 
-We created a python wrapper of the present implementation. It brings :
+If you want to use the present implementation on your own data, the easiest way is to use our Python wrapper. It can be found here : [https://github.com/oboulant/tamis](https://github.com/oboulant/tamis). 
+It brings :
 
 * The benefit of Python flexibility in terms of formating input data, 
 * The benefit of C speed implementation. 
-
-You can find the Python wrapper here : [https://github.com/oboulant/tamis](https://github.com/oboulant/tamis). 
 
 ## Tests
 

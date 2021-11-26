@@ -46,7 +46,7 @@ It brings :
 
 ## Tests
 
-We implemented unit tests using [Infer](https://fbinfer.com/docs/getting-started/). You can compile and run those tests using the following instructions. 
+We implemented unit tests using [Unity](https://github.com/ThrowTheSwitch/Unity). You can compile and run those tests using the following instructions. 
 
 ### Clean and Compile
 
@@ -60,3 +60,6 @@ We implemented unit tests using [Infer](https://fbinfer.com/docs/getting-started
 > ./test
 ```
 
+### Infer
+
+We also made a run local runs (not integrated within the CI) [Infer](https://fbinfer.com/docs/getting-started/) in order to check that there was no memory management errors. 
